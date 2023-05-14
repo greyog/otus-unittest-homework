@@ -10,7 +10,7 @@ public class CardsDao {
 
     public Card saveCard(Card card) {
         if (card.getId() == 0) {
-            return createCard(card.getNumber(), card.getAccountId(), card.getPinCode());
+            return createCard(card.getNumber(), card.getAccountId(), card.getPinHash());
         }
         Cards.cards.put(card.getNumber(), card);
         return card;

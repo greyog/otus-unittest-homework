@@ -1,11 +1,12 @@
 package otus.study.cashmachine.machine.service;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import otus.study.cashmachine.bank.dao.CardsDao;
 import otus.study.cashmachine.bank.data.Card;
 import otus.study.cashmachine.bank.service.AccountService;
@@ -16,10 +17,10 @@ import otus.study.cashmachine.machine.service.impl.CashMachineServiceImpl;
 import otus.study.cashmachine.machine.service.util.CardServiceUtil;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -75,8 +76,7 @@ class CashMachineServiceTest {
     }
 
     @Test
-    void changePin() {
-// @TODO create change pin test using spy as implementation and ArgumentCaptor and thenReturn
+    void changePinWithCaptor() {
         String cardNum = "1234";
         String pin = "0000";
         String newPin = "0001";
@@ -92,13 +92,36 @@ class CashMachineServiceTest {
         verify(cardsDao).saveCard(cardCaptor.capture());
 
         assertEquals(cardNum, cardCaptor.getValue().getNumber());
-        assertEquals(CardServiceUtil.getHash(newPin), cardCaptor.getValue().getPinCode());
+        assertEquals(CardServiceUtil.getHash(newPin), cardCaptor.getValue().getPinHash());
 
     }
 
     @Test
     void changePinWithAnswer() {
-// @TODO create change pin test using spy as implementation and mock an thenAnswer
+        String cardNum = "1234";
+        String pin = "0000";
+        String newPin = "0001";
+        String oldPinHash = CardServiceUtil.getHash(pin);
+        String newPinHash = CardServiceUtil.getHash(newPin);
+
+        when(cardsDao.getCardByNumber(cardNum))
+                .thenReturn(new Card(0L, cardNum, 0L, oldPinHash));
+        boolean actualResult = cashMachineService.changePin(cardNum, pin , newPin);
+
+        lenient().when(cardsDao.saveCard(any())).thenAnswer(new Answer<Card>() {
+            @Override
+            public Card answer(InvocationOnMock invocation) throws Throwable {
+                Card argument = invocation.getArgument(0);
+                assertEquals(cardNum, argument.getNumber());
+                assertEquals(newPinHash, argument.getPinHash());
+                return argument;
+            }
+        });
+
+        verify(cardService).cnangePin(anyString(), anyString(), anyString());
+        verify(cardsDao).saveCard(any());
+
+        assertTrue(actualResult);
 
     }
 }

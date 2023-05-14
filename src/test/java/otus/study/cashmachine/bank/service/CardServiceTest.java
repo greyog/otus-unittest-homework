@@ -36,7 +36,7 @@ public class CardServiceTest {
         assertNotEquals(0, newCard.getId());
         assertEquals("5555", newCard.getNumber());
         assertEquals(1L, newCard.getAccountId());
-        assertEquals("0123", newCard.getPinCode());
+        assertEquals("0123", newCard.getPinHash());
     }
 
     @Test

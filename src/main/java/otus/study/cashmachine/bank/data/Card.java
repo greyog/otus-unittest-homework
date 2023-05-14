@@ -5,13 +5,13 @@ public class Card {
 
     private Long accountId;
     private String number;
-    private String pinCode;
+    private String pinHash;
 
-    public Card(final long id, final String number, final Long accountId, final String pinCode) {
+    public Card(final long id, final String number, final Long accountId, final String pinHash) {
         this.id = id;
         this.number = number;
         this.accountId = accountId;
-        this.pinCode = pinCode;
+        this.pinHash = pinHash;
     }
 
     public long getId() {
@@ -38,11 +38,11 @@ public class Card {
         this.number = number;
     }
 
-    public String getPinCode() {
-        return pinCode;
+    public String getPinHash() {
+        return pinHash;
     }
 
-    public void setPinCode(final String pinCode) {
-        this.pinCode = pinCode;
+    public void setPinHash(final String pinHash) {
+        this.pinHash = pinHash;
     }
 }

@@ -8,7 +8,7 @@ import java.util.HexFormat;
 
 public class CardServiceUtil {
     public static void checkPin(Card card, String pin) {
-        if (!getHash(pin).equals(card.getPinCode())) {
+        if (!getHash(pin).equals(card.getPinHash())) {
             throw new IllegalArgumentException("Pincode is incorrect");
         }
     }

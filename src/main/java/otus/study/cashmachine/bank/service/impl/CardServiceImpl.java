@@ -6,9 +6,6 @@ import otus.study.cashmachine.bank.service.AccountService;
 import otus.study.cashmachine.bank.service.CardService;
 
 import java.math.BigDecimal;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 
 import static otus.study.cashmachine.machine.service.util.CardServiceUtil.checkPin;
 import static otus.study.cashmachine.machine.service.util.CardServiceUtil.getHash;
@@ -39,7 +36,7 @@ public class CardServiceImpl implements CardService {
 
         try {
             checkPin(card, oldPin);
-            card.setPinCode(getHash(newPin));
+            card.setPinHash(getHash(newPin));
             cardsDao.saveCard(card);
             return true;
         } catch (Exception e) {
