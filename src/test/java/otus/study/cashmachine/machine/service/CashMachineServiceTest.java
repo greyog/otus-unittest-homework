@@ -1,5 +1,6 @@
 package otus.study.cashmachine.machine.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +12,12 @@ import otus.study.cashmachine.bank.service.impl.CardServiceImpl;
 import otus.study.cashmachine.machine.data.CashMachine;
 import otus.study.cashmachine.machine.data.MoneyBox;
 import otus.study.cashmachine.machine.service.impl.CashMachineServiceImpl;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CashMachineServiceTest {
@@ -39,8 +46,20 @@ class CashMachineServiceTest {
 
 
     @Test
-    void getMoney() {
-// @TODO create get money test using spy as mock
+    void testGetMoneyWithSpy() {
+        BigDecimal amount = BigDecimal.valueOf(100);
+        String cardNum = "1234";
+        String pin = "0000";
+
+        doReturn(amount).when(cardService).getMoney(cardNum, pin, amount);
+        when(moneyBoxService.getMoney(any(), anyInt())).thenReturn(List.of(1, 0 , 0, 0));
+
+        List<Integer> actual = cashMachineService.getMoney(cashMachine, "1234", "0000", amount);
+
+        verify(cardService).getMoney(eq(cardNum), eq(pin), eq(amount));
+
+        List<Integer> expected = List.of(1, 0, 0, 0);
+        Assertions.assertEquals(expected, actual);
     }
 
     @Test
