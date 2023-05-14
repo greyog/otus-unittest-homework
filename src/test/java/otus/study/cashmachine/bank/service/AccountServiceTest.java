@@ -31,8 +31,7 @@ public class AccountServiceTest {
     }
 
     @Test
-    void createAccountMock() {
-// @TODO test account creation with mock and ArgumentMatcher
+    void testCreateAccountWithMatcher() {
         BigDecimal expectedAmount = BigDecimal.ONE;
 
         ArgumentMatcher<Account> matcher = new ArgumentMatcher<Account>() {
@@ -49,8 +48,7 @@ public class AccountServiceTest {
     }
 
     @Test
-    void createAccountCaptor() {
-//  @TODO test account creation with ArgumentCaptor
+    void testCreateAccountWithCaptor() {
         Account expected = new Account(0, BigDecimal.ONE);
         ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
 
