@@ -10,6 +10,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
+import static otus.study.cashmachine.machine.service.util.CardServiceUtil.checkPin;
+import static otus.study.cashmachine.machine.service.util.CardServiceUtil.getHash;
+
 
 public class CardServiceImpl implements CardService {
     AccountService accountService;
@@ -76,22 +79,5 @@ public class CardServiceImpl implements CardService {
         }
         checkPin(card, pin);
         return accountService.checkBalance(card.getId());
-    }
-
-    private void checkPin(Card card, String pin) {
-        if (!getHash(pin).equals(card.getPinCode())) {
-            throw new IllegalArgumentException("Pincode is incorrect");
-        }
-    }
-
-    private String getHash(String value) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA1");
-            digest.update(value.getBytes());
-            String result = HexFormat.of().formatHex(digest.digest());
-            return result;
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
