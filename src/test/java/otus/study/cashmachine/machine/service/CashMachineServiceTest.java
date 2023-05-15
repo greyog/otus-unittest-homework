@@ -22,6 +22,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
+import static otus.study.cashmachine.machine.service.util.CardServiceUtil.getHash;
 
 @ExtendWith(MockitoExtension.class)
 class CashMachineServiceTest {
@@ -68,11 +69,39 @@ class CashMachineServiceTest {
 
     @Test
     void putMoney() {
+        String pin = "0000";
+        Card card = new Card(1L, "1234", 1L, getHash(pin));
+        when(cardsDao.getCardByNumber(eq(card.getNumber()))).thenReturn(card);
+
+        List<Integer> notes = List.of(1, 2, 0, 0);
+        BigDecimal expectedAmount = BigDecimal.valueOf(7000L);
+        when(accountService.putMoney(eq(card.getAccountId()), any())).thenReturn(expectedAmount);
+
+        BigDecimal actual = cashMachineService.putMoney(cashMachine, card.getNumber(), pin, notes );
+
+        verify(moneyBoxService).putMoney(any(),
+                eq(notes.get(3)),
+                eq(notes.get(2)),
+                eq(notes.get(1)),
+                eq(notes.get(0)));
+
+        ArgumentCaptor<BigDecimal> captor = ArgumentCaptor.forClass(BigDecimal.class);
+        verify(cardService).putMoney(anyString(), anyString(), captor.capture());
+        assertEquals(expectedAmount, captor.getValue());
     }
 
     @Test
     void checkBalance() {
+        String pin = "0000";
+        Card card = new Card(1L, "1234", 1L, getHash(pin));
+        when(cardsDao.getCardByNumber(any())).thenReturn(card);
 
+        BigDecimal expectedAmount = BigDecimal.TEN;
+        when(accountService.checkBalance(eq(card.getAccountId()))).thenReturn(expectedAmount);
+
+        BigDecimal actualAmount = cashMachineService.checkBalance(cashMachine, card.getNumber(), pin);
+
+        assertEquals(expectedAmount, actualAmount);
     }
 
     @Test
