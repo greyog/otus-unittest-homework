@@ -108,14 +108,11 @@ class CashMachineServiceTest {
                 .thenReturn(new Card(0L, cardNum, 0L, oldPinHash));
         boolean actualResult = cashMachineService.changePin(cardNum, pin , newPin);
 
-        lenient().when(cardsDao.saveCard(any())).thenAnswer(new Answer<Card>() {
-            @Override
-            public Card answer(InvocationOnMock invocation) throws Throwable {
-                Card argument = invocation.getArgument(0);
-                assertEquals(cardNum, argument.getNumber());
-                assertEquals(newPinHash, argument.getPinHash());
-                return argument;
-            }
+        lenient().when(cardsDao.saveCard(any())).thenAnswer((Answer<Card>) invocation -> {
+            Card argument = invocation.getArgument(0);
+            assertEquals(cardNum, argument.getNumber());
+            assertEquals(newPinHash, argument.getPinHash());
+            return argument;
         });
 
         verify(cardService).cnangePin(anyString(), anyString(), anyString());

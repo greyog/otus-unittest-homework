@@ -3,7 +3,6 @@ package otus.study.cashmachine.bank.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import otus.study.cashmachine.TestUtil;
 import otus.study.cashmachine.bank.dao.CardsDao;
 import otus.study.cashmachine.bank.data.Card;
 import otus.study.cashmachine.bank.service.impl.CardServiceImpl;
@@ -12,6 +11,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static otus.study.cashmachine.machine.service.util.CardServiceUtil.getHash;
 
 public class CardServiceTest {
     AccountService accountService;
@@ -41,7 +41,7 @@ public class CardServiceTest {
 
     @Test
     void checkBalance() {
-        Card card = new Card(1L, "1234", 1L, TestUtil.getHash("0000"));
+        Card card = new Card(1L, "1234", 1L, getHash("0000"));
         when(cardsDao.getCardByNumber(anyString())).thenReturn(card);
         when(accountService.checkBalance(1L)).thenReturn(new BigDecimal(1000));
 
@@ -55,7 +55,7 @@ public class CardServiceTest {
         ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
 
         when(cardsDao.getCardByNumber("1111"))
-                .thenReturn(new Card(1L, "1111", 100L, TestUtil.getHash("0000")));
+                .thenReturn(new Card(1L, "1111", 100L, getHash("0000")));
 
         when(accountService.getMoney(idCaptor.capture(), amountCaptor.capture()))
                 .thenReturn(BigDecimal.TEN);
@@ -68,7 +68,32 @@ public class CardServiceTest {
     }
 
     @Test
+    void putMoneyNoCardFoundThrows() {
+//        Card card = new Card(1L, "1234", 1L, getHash("0000"));
+        when(cardsDao.getCardByNumber(anyString())).thenReturn(null);
+
+        Exception thrown = assertThrows(IllegalArgumentException.class,
+                () -> cardService.putMoney("1234", "0000", BigDecimal.TEN));
+        verify(cardsDao).getCardByNumber(anyString());
+
+        assertEquals("No card found", thrown.getMessage());
+    }
+
+    @Test
     void putMoney() {
+        Card card = new Card(1L, "1234", 1L, getHash("0000"));
+        ArgumentCaptor<BigDecimal> captor = ArgumentCaptor.forClass(BigDecimal.class);
+
+        when(cardsDao.getCardByNumber(anyString())).thenReturn(card);
+        when(accountService.putMoney(anyLong(), any())).thenReturn(BigDecimal.TEN);
+
+        BigDecimal amountToPut = BigDecimal.TEN;
+        BigDecimal actual = cardService.putMoney("1234", "0000", amountToPut);
+
+        verify(cardsDao).getCardByNumber(anyString());
+        verify(accountService).putMoney(anyLong(), captor.capture());
+
+        assertEquals(amountToPut, captor.getValue());
     }
 
     @Test
@@ -79,6 +104,26 @@ public class CardServiceTest {
         Exception thrown = assertThrows(IllegalArgumentException.class, () -> {
             cardService.getBalance("1234", "0012");
         });
-        assertEquals(thrown.getMessage(), "Pincode is incorrect");
+        assertEquals("Pincode is incorrect", thrown.getMessage());
+    }
+
+    @Test
+    void changePinNoCardFound() {
+//        Card card = new Card(1L, "1234", 1L, "0000");
+        when(cardsDao.getCardByNumber(any())).thenReturn(null);
+
+        Exception thrown = assertThrows(IllegalArgumentException.class, () -> {
+            cardService.cnangePin("1234", "0000", "0001");
+        });
+        assertEquals("No card found", thrown.getMessage());
+    }
+
+    @Test
+    void changePinIncorrectOldPin() {
+        Card card = new Card(1L, "1234", 1L, getHash("0000"));
+        when(cardsDao.getCardByNumber(any())).thenReturn(card);
+
+        boolean result = cardService.cnangePin("1234", "0001", "0001");
+        assertFalse(result);
     }
 }

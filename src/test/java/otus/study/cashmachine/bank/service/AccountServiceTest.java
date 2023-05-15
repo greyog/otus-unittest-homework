@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
@@ -63,17 +64,80 @@ public class AccountServiceTest {
 
     @Test
     void addSum() {
+        long accId = 123L;
+        BigDecimal amount = BigDecimal.ZERO;
+        BigDecimal toAdd = BigDecimal.ONE;
+        Account account = new Account(accId, amount);
+
+        when(accountDao.getAccount(anyLong())).thenReturn(account);
+        BigDecimal actualAmount = accountServiceImpl.putMoney(accId, toAdd);
+
+        verify(accountDao).getAccount(anyLong());
+
+        BigDecimal expectedAmount = amount.add(toAdd);
+        assertEquals(expectedAmount, actualAmount);
     }
 
     @Test
-    void getSum() {
+    void getSumEnoughMoney() {
+        long accId = 123L;
+        BigDecimal amount = BigDecimal.TEN;
+        BigDecimal amountToGet = BigDecimal.ONE;
+        BigDecimal expectedAmount = amount.subtract(amountToGet);
+        Account account = new Account(accId, amount);
+
+        when(accountDao.getAccount(anyLong())).thenReturn(account);
+        BigDecimal actual = accountServiceImpl.getMoney(accId, amountToGet);
+
+        verify(accountDao).getAccount(anyLong());
+
+        assertEquals(expectedAmount, actual);
+    }
+
+    @Test
+    void getSumNotEnoughMoney() {
+        long accId = 123L;
+        BigDecimal amount = BigDecimal.ZERO;
+        BigDecimal amountToGet = BigDecimal.ONE;
+        BigDecimal expectedAmount = amount.subtract(amountToGet);
+        Account account = new Account(accId, amount);
+
+        when(accountDao.getAccount(anyLong())).thenReturn(account);
+
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> accountServiceImpl.getMoney(accId, amountToGet));
+
+        verify(accountDao).getAccount(anyLong());
+
+        assertEquals("Not enough money", e.getMessage());
     }
 
     @Test
     void getAccount() {
+        long accId = 123L;
+        BigDecimal amount = BigDecimal.ONE;
+        Account account = new Account(accId, amount);
+
+        when(accountDao.getAccount(anyLong())).thenReturn(account);
+        Account actual = accountServiceImpl.getAccount(accId);
+
+        verify(accountDao).getAccount(anyLong());
+
+        assertEquals(accId, actual.getId());
+        assertEquals(amount, actual.getAmount());
     }
 
     @Test
     void checkBalance() {
+        long accId = 123L;
+        BigDecimal amount = BigDecimal.ONE;
+        Account account = new Account(accId, amount);
+
+        when(accountDao.getAccount(anyLong())).thenReturn(account);
+        BigDecimal actualAmount = accountServiceImpl.checkBalance(accId);
+
+        verify(accountDao).getAccount(anyLong());
+
+        assertEquals(amount, actualAmount);
     }
 }
