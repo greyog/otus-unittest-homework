@@ -1,21 +1,18 @@
 package otus.study.cashmachine.bank.service;
 
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
-import org.mockito.Mockito;
 import otus.study.cashmachine.bank.dao.AccountDao;
 import otus.study.cashmachine.bank.data.Account;
 import otus.study.cashmachine.bank.service.impl.AccountServiceImpl;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 
@@ -35,12 +32,7 @@ public class AccountServiceTest {
     void testCreateAccountWithMatcher() {
         BigDecimal expectedAmount = BigDecimal.ONE;
 
-        ArgumentMatcher<Account> matcher = new ArgumentMatcher<Account>() {
-            @Override
-            public boolean matches(Account argument) {
-                return argument.getAmount().equals(expectedAmount);
-            }
-        };
+        ArgumentMatcher<Account> matcher = argument -> argument.getAmount().compareTo(expectedAmount) == 0;
 
         when(accountDao.saveAccount(argThat(matcher))).thenReturn(new Account(0, expectedAmount));
         Account actual = accountServiceImpl.createAccount(expectedAmount);
@@ -63,7 +55,7 @@ public class AccountServiceTest {
     }
 
     @Test
-    void addSum() {
+    void testAddSumCallsAccountDaoReturnsProperAmount() {
         long accId = 123L;
         BigDecimal amount = BigDecimal.ZERO;
         BigDecimal toAdd = BigDecimal.ONE;
@@ -79,7 +71,7 @@ public class AccountServiceTest {
     }
 
     @Test
-    void getSumEnoughMoney() {
+    void testGetSumFromAccountWithEnoughMoney() {
         long accId = 123L;
         BigDecimal amount = BigDecimal.TEN;
         BigDecimal amountToGet = BigDecimal.ONE;
@@ -95,11 +87,10 @@ public class AccountServiceTest {
     }
 
     @Test
-    void getSumNotEnoughMoney() {
+    void testGetSumNotEnoughMoneyOnAccountBalance() {
         long accId = 123L;
         BigDecimal amount = BigDecimal.ZERO;
         BigDecimal amountToGet = BigDecimal.ONE;
-        BigDecimal expectedAmount = amount.subtract(amountToGet);
         Account account = new Account(accId, amount);
 
         when(accountDao.getAccount(anyLong())).thenReturn(account);
@@ -113,7 +104,7 @@ public class AccountServiceTest {
     }
 
     @Test
-    void getAccount() {
+    void testGetAccountCallsAccountDaoReturnsProperAccount() {
         long accId = 123L;
         BigDecimal amount = BigDecimal.ONE;
         Account account = new Account(accId, amount);
@@ -128,7 +119,7 @@ public class AccountServiceTest {
     }
 
     @Test
-    void checkBalance() {
+    void testCheckBalanceCallsAccountDaoReturnsProperAmountForAccount() {
         long accId = 123L;
         BigDecimal amount = BigDecimal.ONE;
         Account account = new Account(accId, amount);
