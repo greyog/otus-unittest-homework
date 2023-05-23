@@ -3,8 +3,10 @@ package otus.study.cashmachine.machine.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-import org.mockito.invocation.InvocationOnMock;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import otus.study.cashmachine.bank.dao.CardsDao;
@@ -77,7 +79,7 @@ class CashMachineServiceTest {
         BigDecimal expectedAmount = BigDecimal.valueOf(7000L);
         when(accountService.putMoney(eq(card.getAccountId()), any())).thenReturn(expectedAmount);
 
-        BigDecimal actual = cashMachineService.putMoney(cashMachine, card.getNumber(), pin, notes );
+        cashMachineService.putMoney(cashMachine, card.getNumber(), pin, notes );
 
         verify(moneyBoxService).putMoney(any(),
                 eq(notes.get(3)),
@@ -135,14 +137,15 @@ class CashMachineServiceTest {
 
         when(cardsDao.getCardByNumber(cardNum))
                 .thenReturn(new Card(0L, cardNum, 0L, oldPinHash));
-        boolean actualResult = cashMachineService.changePin(cardNum, pin , newPin);
 
-        lenient().when(cardsDao.saveCard(any())).thenAnswer((Answer<Card>) invocation -> {
+        when(cardsDao.saveCard(any())).thenAnswer((Answer<Card>) invocation -> {
             Card argument = invocation.getArgument(0);
             assertEquals(cardNum, argument.getNumber());
             assertEquals(newPinHash, argument.getPinHash());
             return argument;
         });
+
+        boolean actualResult = cashMachineService.changePin(cardNum, pin , newPin);
 
         verify(cardService).cnangePin(anyString(), anyString(), anyString());
         verify(cardsDao).saveCard(any());

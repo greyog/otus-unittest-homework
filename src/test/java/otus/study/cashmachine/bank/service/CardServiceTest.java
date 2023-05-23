@@ -88,7 +88,7 @@ public class CardServiceTest {
         when(accountService.putMoney(anyLong(), any())).thenReturn(BigDecimal.TEN);
 
         BigDecimal amountToPut = BigDecimal.TEN;
-        BigDecimal actual = cardService.putMoney("1234", "0000", amountToPut);
+        cardService.putMoney("1234", "0000", amountToPut);
 
         verify(cardsDao).getCardByNumber(anyString());
         verify(accountService).putMoney(anyLong(), captor.capture());
@@ -97,29 +97,26 @@ public class CardServiceTest {
     }
 
     @Test
-    void checkIncorrectPin() {
+    void checkIncorrectPinThrows() {
         Card card = new Card(1L, "1234", 1L, "0000");
         when(cardsDao.getCardByNumber(eq("1234"))).thenReturn(card);
 
-        Exception thrown = assertThrows(IllegalArgumentException.class, () -> {
-            cardService.getBalance("1234", "0012");
-        });
+        Exception thrown = assertThrows(IllegalArgumentException.class,
+                () -> cardService.getBalance("1234", "0012"));
         assertEquals("Pincode is incorrect", thrown.getMessage());
     }
 
     @Test
-    void changePinNoCardFound() {
-//        Card card = new Card(1L, "1234", 1L, "0000");
+    void changePinCardNotFoundThrows() {
         when(cardsDao.getCardByNumber(any())).thenReturn(null);
 
-        Exception thrown = assertThrows(IllegalArgumentException.class, () -> {
-            cardService.cnangePin("1234", "0000", "0001");
-        });
+        Exception thrown = assertThrows(IllegalArgumentException.class,
+                () -> cardService.cnangePin("1234", "0000", "0001"));
         assertEquals("No card found", thrown.getMessage());
     }
 
     @Test
-    void changePinIncorrectOldPin() {
+    void changePinIncorrectOldPinReturnsFalse() {
         Card card = new Card(1L, "1234", 1L, getHash("0000"));
         when(cardsDao.getCardByNumber(any())).thenReturn(card);
 
